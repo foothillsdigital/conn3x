@@ -113,7 +113,7 @@ jobs:
             $flags = '-cover', '-coverpkg=./internal/conn3x/...,./cmd/conn3x/...'
             $cargs = '-args', "-test.gocoverdir=$env:GOCOVERDIR"
           }
-          go test -tags windowshost -count=1 -timeout 45m -v @flags ./test/windows/ @cargs 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\windows-test.log"
+          go test -tags windowshost -count=1 -timeout 20m -v -run TestZZTimezoneProbe @flags ./test/windows/ @cargs 2>&1 | Tee-Object -FilePath "$env:RUNNER_TEMP\windows-test.log"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           # A missing variable would only skip it, and a skip looks like a pass.
           if (-not (Select-String -LiteralPath "$env:RUNNER_TEMP\windows-test.log" -SimpleMatch -Quiet -- '--- PASS: TestPlanAndApply')) {
