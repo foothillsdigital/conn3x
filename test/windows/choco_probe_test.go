@@ -56,13 +56,15 @@ $r.nuspec_version = if ($nuspec) { ([xml](Get-Content -LiteralPath $nuspec[0].Fu
 $r.list_local = (& choco list --limit-output 2>&1 | Select-String 'c3x' | Out-String).Trim()
 
 # Pins: what files appear or change.
-$before = @{}; Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $before[$_.FullName] = $_.LastWriteTimeUtc }
+$before = @{}; Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { $before[$_.FullName] = $_.LastWriteTimeUtc }
 Start-Sleep -Seconds 1
 & choco pin add -n c3xprobe 2>&1 | Out-Null
 $r.pin_exit = $LASTEXITCODE
-$r.pin_changed = @(Get-ChildItem -LiteralPath $root -Recurse -File -ErrorAction SilentlyContinue | Where-Object { -not $before.ContainsKey($_.FullName) -or $before[$_.FullName] -ne $_.LastWriteTimeUtc } | ForEach-Object { $_.FullName.Substring($root.Length) })
+$r.pin_changed = @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { -not $before.ContainsKey($_.FullName) -or $before[$_.FullName] -ne $_.LastWriteTimeUtc } | ForEach-Object { $_.FullName.Substring($root.Length) })
 $r.pin_list = (& choco pin list --limit-output 2>&1 | Out-String).Trim()
+$r.pin_files = @(Get-ChildItem -LiteralPath (Join-Path $root "libC3xProbe") -Force -Recurse | ForEach-Object { $_.Name + " hidden=" + [bool]($_.Attributes -band [IO.FileAttributes]::Hidden) })
 & choco pin remove -n c3xprobe 2>&1 | Out-Null
+$r.pin_after_remove = @(Get-ChildItem -LiteralPath (Join-Path $root "libC3xProbe") -Force -Filter "*.pin" | ForEach-Object Name)
 
 # Reboot exit codes, without and with enhanced exit codes.
 & choco install c3xreboot -s $feed -y --no-progress 2>&1 | Out-Null
