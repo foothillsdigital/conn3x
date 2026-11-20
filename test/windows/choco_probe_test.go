@@ -62,9 +62,9 @@ Start-Sleep -Seconds 1
 $r.pin_exit = $LASTEXITCODE
 $r.pin_changed = @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { -not $before.ContainsKey($_.FullName) -or $before[$_.FullName] -ne $_.LastWriteTimeUtc } | ForEach-Object { $_.FullName.Substring($root.Length) })
 $r.pin_list = (& choco pin list --limit-output 2>&1 | Out-String).Trim()
-$r.pin_files = @(Get-ChildItem -LiteralPath (Join-Path $root "libC3xProbe") -Force -Recurse | ForEach-Object { $_.Name + " hidden=" + [bool]($_.Attributes -band [IO.FileAttributes]::Hidden) })
+$r.pin_files = @(Get-ChildItem -LiteralPath (Join-Path (Join-Path $root 'lib') 'C3xProbe') -Force -Recurse | ForEach-Object { $_.Name + " hidden=" + [bool]($_.Attributes -band [IO.FileAttributes]::Hidden) })
 & choco pin remove -n c3xprobe 2>&1 | Out-Null
-$r.pin_after_remove = @(Get-ChildItem -LiteralPath (Join-Path $root "libC3xProbe") -Force -Filter "*.pin" | ForEach-Object Name)
+$r.pin_after_remove = @(Get-ChildItem -LiteralPath (Join-Path (Join-Path $root 'lib') 'C3xProbe') -Force -Filter "*.pin" | ForEach-Object Name)
 
 # Reboot exit codes, without and with enhanced exit codes.
 & choco install c3xreboot -s $feed -y --no-progress 2>&1 | Out-Null
